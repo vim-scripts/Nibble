@@ -1,17 +1,21 @@
 " nibble.vim -- Nibble (also called snake) game for Vim
 " Author: Hari Krishna (hari_vim at yahoo dot com)
-" Last Change: 18-Feb-2004 @ 19:43
+" Last Change: 20-Feb-2004 @ 17:17
 " Created: 06-Feb-2004
 " Requires: Vim-6.2, multvals.vim(3.4), genutils.vim(1.10)
-" Version: 1.0.2
+" Version: 1.1.0
 " Licence: This program is free software; you can redistribute it and/or
 "          modify it under the terms of the GNU General Public License.
 "          See http://www.gnu.org/copyleft/gpl.txt 
+" Acknowledgements:
+"   - Thanks to Bram Moolenaar (Bram at moolenaar dot net) for reporting
+"     problems and giving feedback.
 " Download From:
-"     http://www.vim.org/script.php?script_id=
+"     http://www.vim.org/script.php?script_id=916
 " Description:
 " TODO:
 "   - Investigate any possibilities for highlighting half-character vertically.
+"   - It should be possible to support two players with two snakes.
 
 if exists('loaded_nibble')
   call s:Nibble()
@@ -28,14 +32,14 @@ if !exists('loaded_multvals')
   runtime plugin/multvals.vim
 endif
 if !exists('loaded_multvals') || loaded_multvals < 304
-  echomsg 'nibble: You do not have the latest version of multvals.vim'
+  echomsg 'nibble: You need the latest version of multvals.vim plugin'
   finish
 endif
 if !exists('loaded_genutils')
   runtime plugin/genutils.vim
 endif
 if !exists('loaded_genutils') || loaded_genutils < 110
-  echomsg 'nibble: You do not have the latest version of genutils.vim'
+  echomsg 'nibble: You need the latest version of genutils.vim plugin'
   finish
 endif
 let loaded_nibble = 1
@@ -93,11 +97,15 @@ function! s:SetupBuf()
   setlocal nonumber
   setlocal foldcolumn=0 nofoldenable
   setlocal tabstop=1
+  setlocal bufhidden=hide
 
   " Setup syntax such a way that any non-tabs appear as selected.
   syn clear
   syn match NibbleSelected "[^\t]"
-  hi NibbleSelected guifg=grey90 guibg=black gui=reverse
+  hi NibbleSelected gui=reverse term=reverse cterm=reverse
+
+  " Let pressing space again resume a paused game.
+  nnoremap <buffer> <Space> :Nibble<CR>
 endfunction
 
 function! s:Nibble()
@@ -158,10 +166,10 @@ function! s:Nibble()
   finally
     exec restCurs | " Restore the cursor highlighting.
     let &guicursor = _gcr
-    call setbufvar(s:myBufNum, '&modifiable', 1)
     if !s:playPaused
       call s:clearVars() 
     endif
+    call setbufvar(s:myBufNum, '&modifiable', !s:playPaused)
   endtry
 endfunction
 
@@ -368,6 +376,9 @@ function! s:InitLevel(level)
 
   call s:ShowScore()
   call s:ShowLevel()
+  " Eat any pending characters.
+  while getchar(0) != '0'
+  endwhile
   return 1
 endfunction
 
@@ -378,13 +389,10 @@ function! s:putrow(y, x1, x2, ch)
   let x2 = (x2 == s:MAXX) ? x2 + 1 : x2
   let ch = a:ch[0]
   let _search = @/
-  let _report = &report
   try
-    set report=99999
     let @/ = '\%>'.(x1-1).'c.\%<'.(x2+2).'c'
     silent! exec y.'s//'.ch.'/g'
   finally
-    let &report = _report
     let @/ = _search
   endtry
 endfunction
@@ -395,13 +403,10 @@ function! s:putcol(y1, y2, x, ch)
   let x = (a:x > 0) ? a:x : 1
   let ch = a:ch[0]
   let _search = @/
-  let _report = &report
   try
-    set report=99999
     let @/ = '\%'.x.'c.'
     silent! exec y1.','.y2.'s//'.ch
   finally
-    let &report = _report
     let @/ = _search
   endtry
 endfunction
@@ -410,17 +415,14 @@ function! s:putstr(y, x, str)
   let y = (a:y > 0) ? a:y : 1
   let x = (a:x > 0) ? a:x : 1
   let _search = @/
-  let _report = &report
   try
     if a:y > line('$')
-      $put=a:str
+      silent! $put=a:str
     else
-      set report=99999
       let @/ = '\%'.x.'c.\{'.strlen(a:str).'}'
       silent! exec y.'s//'.escape(a:str, '\&~/')
     endif
   finally
-    let &report = _report
     let @/ = _search
   endtry
 endfunction
@@ -447,7 +449,7 @@ function! s:clear()
   call setline(1, tabFill)
   let i = 2
   while i <= s:MAXY
-    $put=tabFill
+    silent! $put=tabFill
     let i = i + 1
   endwhile 
 

@@ -7,7 +7,7 @@
 "          modify it under the terms of the GNU General Public License.
 "          See http://www.gnu.org/copyleft/gpl.txt 
 " Download From:
-"     http://www.vim.org/script.php?script_id=
+"     http://www.vim.org/script.php?script_id=916
 " Description:
 "   This is just a quick-loader for the Nibble game, see
 "   games/nibble/nibble.vim for the actual code.
