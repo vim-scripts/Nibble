@@ -1,0 +1,20 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=916
+
+- Based on my memories from the first PC game that I played called Nibble (or Nibbles?) written for DOS I think in Basic.
+- Recreated the first 5 levels that I remember, very easy to add new levels
+  (see s:InitLevel() function).
+- Use :Nibble command to start the game.
+- Use 'h', 'j', 'k' and 'l' keys to control the direction of the snake and
+  drive it on to the aim (call it a sleeping mouse :).
+- Use 'q' to quit, <C-C> or <C-Break> to stop and <Space> to pause.
+- You have 3 lives to expend. The current number of lives, level and the score
+  is displayed.
+- If the snake touches the border, the blocks or itself you loose a life.
+- Game ends when all the lives are consumed or you complete all the levels.
+
+Good exerciese to practice hjkl key movements, even for experienced Vi users,
+as you need to sometimes react very quickly.
+
+
+
+Search_key_words: nibble nibbles snake game games hari krishna dara
